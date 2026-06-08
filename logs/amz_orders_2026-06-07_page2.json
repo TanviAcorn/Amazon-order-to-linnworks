@@ -1,0 +1,12 @@
+{
+  "status": 400,
+  "body": {
+    "errors": [
+      {
+        "code": "InvalidInput",
+        "message": "The input you have submitted is not valid. One and only one of createdAfter or lastUpdatedAfter must be provided.",
+        "details": ""
+      }
+    ]
+  }
+}

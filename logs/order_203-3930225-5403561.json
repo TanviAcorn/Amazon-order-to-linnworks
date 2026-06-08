@@ -1,0 +1,89 @@
+{
+  "status": 200,
+  "body": {
+    "order": {
+      "orderId": "203-3930225-5403561",
+      "createdTime": "2026-06-07T16:40:22.036Z",
+      "lastUpdatedTime": "2026-06-08T06:56:09.253Z",
+      "programs": [
+        "PREMIUM",
+        "PRIME"
+      ],
+      "fulfillment": {
+        "shipByWindow": {
+          "latestDateTime": "2026-06-08T22:59:59Z",
+          "earliestDateTime": "2026-06-07T23:00:00Z"
+        },
+        "fulfilledBy": "MERCHANT",
+        "deliverByWindow": {
+          "latestDateTime": "2026-06-09T22:59:59Z",
+          "earliestDateTime": "2026-06-08T23:00:00Z"
+        },
+        "fulfillmentStatus": "SHIPPED",
+        "fulfillmentServiceLevel": "NEXT_DAY"
+      },
+      "salesChannel": {
+        "marketplaceId": "A1F83G8C2ARO7P",
+        "marketplaceName": "Amazon.co.uk",
+        "channelName": "AMAZON"
+      },
+      "packages": [
+        {
+          "carrier": "Amazon Logistics",
+          "packageItems": [
+            {
+              "quantity": 1,
+              "orderItemId": "64107999344802"
+            }
+          ],
+          "shipFromAddress": {
+            "stateOrRegion": "United Kingdom",
+            "city": "Aylesbury",
+            "countryCode": "GB",
+            "postalCode": "HP19 8SZ",
+            "name": "ASL IMPORTED",
+            "addressLine1": "The Future Centre",
+            "addressLine2": "Smeaton Cl,"
+          },
+          "packageReferenceId": "3356392588600557281",
+          "shipTime": "2026-06-08T06:55:27.688Z",
+          "createdTime": "2026-06-08T06:55:27.725Z",
+          "shippingService": "Amazon Shipping One-Day Tracked",
+          "packageStatus": {
+            "status": "SHIPPED"
+          },
+          "trackingNumber": "UK4412845573"
+        }
+      ],
+      "orderItems": [
+        {
+          "product": {
+            "condition": {
+              "conditionSubtype": "NEW",
+              "conditionType": "NEW"
+            },
+            "price": {
+              "unitPrice": {
+                "amount": "18.49",
+                "currencyCode": "GBP"
+              }
+            },
+            "asin": "B00FX6NXNC",
+            "sellerSku": "SELL-UK-34505-B4-P-24",
+            "title": "Evian Prestige Still Mineral Water, 24 x 0.5 Litre"
+          },
+          "orderItemId": "64107999344802",
+          "quantityOrdered": 1,
+          "fulfillment": {
+            "quantityUnfulfilled": 0,
+            "quantityFulfilled": 1
+          }
+        }
+      ],
+      "buyer": {
+        "buyerEmail": "tb8hqykgykpdk8t@marketplace.amazon.co.uk",
+        "buyerName": "Bjorn Baldwin"
+      }
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "status": 200,
+  "body": {
+    "TotalsInfo": {
+      "Subtotal": 15.410002750298,
+      "PostageCost": 0.0,
+      "PostageCostExTax": 0.0,
+      "Tax": 3.07999724970205,
+      "TotalCharge": 18.4900000000001,
+      "PaymentMethod": "Default",
+      "PaymentMethodId": "00000000-0000-0000-0000-000000000000",
+      "ProfitMargin": 0.0,
+      "TotalDiscount": 0.0,
+      "Currency": "GBP",
+      "CountryTaxRate": 0.0,
+      "ConversionRate": 1.0
+    },
+    "ShippingInfo": {
+      "Vendor": "Amazon Buy Shipping",
+      "PostalServiceId": "e3c82623-b2a3-41d4-8009-7593db1c946e",
+      "PostalServiceName": "ASL Amazon Shipping",
+      "TotalWeight": 12.0,
+      "ItemWeight": 12.0,
+      "PackageCategoryId": "00000000-0000-0000-0000-000000000000",
+      "PackageCategory": "Default",
+      "PackageTypeId": "00000000-0000-0000-0000-000000000000",
+      "PackageType": "Default",
+      "PostageCost": 0.0,
+      "PostageCostExTax": 0.0,
+      "TrackingNumber": "UK4412845573",
+      "ManualAdjust": false
+    }
+  }
+}
