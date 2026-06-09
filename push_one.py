@@ -7,7 +7,11 @@ from common import (auth_amazon, auth_linnworks,
                     get_tracking_for_order, find_lw_order, write_tracking_to_lw,
                     AMZ_ORDERS_URL)
 
-ORDER_ID = "203-3930225-5403561"
+# Accept order ID from command line or prompt
+if len(sys.argv) > 1:
+    ORDER_ID = sys.argv[1].strip()
+else:
+    ORDER_ID = input("Enter Amazon Order ID: ").strip()
 
 print("=" * 60)
 print(f"  Syncing: {ORDER_ID}")

@@ -1,0 +1,89 @@
+{
+  "status": 200,
+  "body": {
+    "order": {
+      "orderId": "204-8911269-4147505",
+      "createdTime": "2026-06-08T11:36:04.583Z",
+      "lastUpdatedTime": "2026-06-08T12:20:28.623Z",
+      "programs": [
+        "PREMIUM",
+        "PRIME"
+      ],
+      "fulfillment": {
+        "shipByWindow": {
+          "latestDateTime": "2026-06-08T22:59:59Z",
+          "earliestDateTime": "2026-06-07T23:00:00Z"
+        },
+        "fulfilledBy": "MERCHANT",
+        "deliverByWindow": {
+          "latestDateTime": "2026-06-09T22:59:59Z",
+          "earliestDateTime": "2026-06-08T23:00:00Z"
+        },
+        "fulfillmentStatus": "SHIPPED",
+        "fulfillmentServiceLevel": "NEXT_DAY"
+      },
+      "salesChannel": {
+        "marketplaceId": "A1F83G8C2ARO7P",
+        "marketplaceName": "Amazon.co.uk",
+        "channelName": "AMAZON"
+      },
+      "packages": [
+        {
+          "carrier": "Amazon Logistics",
+          "packageItems": [
+            {
+              "quantity": 1,
+              "orderItemId": "64127214013642"
+            }
+          ],
+          "shipFromAddress": {
+            "stateOrRegion": "United Kingdom",
+            "city": "Aylesbury",
+            "countryCode": "GB",
+            "postalCode": "HP19 8SZ",
+            "name": "ASL IMPORTED",
+            "addressLine1": "The Future Centre",
+            "addressLine2": "Smeaton Cl,"
+          },
+          "packageReferenceId": "7962662101329786391",
+          "shipTime": "2026-06-08T12:20:11.848Z",
+          "createdTime": "2026-06-08T12:20:11.883Z",
+          "shippingService": "Amazon Shipping One-Day Tracked",
+          "packageStatus": {
+            "status": "SHIPPED"
+          },
+          "trackingNumber": "UK4413816255"
+        }
+      ],
+      "orderItems": [
+        {
+          "product": {
+            "condition": {
+              "conditionSubtype": "NEW",
+              "conditionType": "NEW"
+            },
+            "price": {
+              "unitPrice": {
+                "amount": "10.89",
+                "currencyCode": "GBP"
+              }
+            },
+            "asin": "B0CKHW1TLL",
+            "sellerSku": "SELL-UK-38908-B2-P-1",
+            "title": "Easy Original Dish Washing Up Liquid Clean Scent Detergent Kitchen Soap 5L Pack Boxed Slamtech"
+          },
+          "orderItemId": "64127214013642",
+          "quantityOrdered": 1,
+          "fulfillment": {
+            "quantityUnfulfilled": 0,
+            "quantityFulfilled": 1
+          }
+        }
+      ],
+      "buyer": {
+        "buyerEmail": "cjy6fw3bclg2tc9@marketplace.amazon.co.uk",
+        "buyerName": "Oscar"
+      }
+    }
+  }
+}

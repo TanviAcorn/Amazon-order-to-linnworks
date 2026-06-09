@@ -36,8 +36,8 @@ FULFILMENT_CENTRES = [
     "d005ecc9-1dcf-4ccc-80c0-8844d0dcab95",
 ]
 
-# Look back 10 minutes — covers any delay between runs
-LOOKBACK_MINUTES = 10
+# Look back 15 minutes — covers any delay between runs
+LOOKBACK_MINUTES = 15
 
 
 def main(timer: func.TimerRequest) -> None:
@@ -147,19 +147,14 @@ def _fetch_shipped_orders(amz_token, after, before):
         page += 1
 
         if pagination_token:
-            params = {
-                "marketplaceIds":  MARKETPLACE_ID,
-                "paginationToken": pagination_token,
-                "includedData":    "PACKAGES,FULFILLMENT",
-            }
+            # Paginated requests: paginationToken ONLY — absolutely nothing else
+            params = {"paginationToken": pagination_token}
         else:
             params = {
-                "marketplaceIds":      MARKETPLACE_ID,
-                "fulfillmentStatuses": "SHIPPED",
-                "lastUpdatedAfter":    after,
-                "lastUpdatedBefore":   before,
-                "includedData":        "PACKAGES,FULFILLMENT",
-                "maxResultsPerPage":   100,
+                "marketplaceIds":    MARKETPLACE_ID,
+                "lastUpdatedAfter":  after,
+                "includedData":      "PACKAGES,FULFILLMENT",
+                "maxResultsPerPage": 100,
             }
 
         try:
@@ -179,8 +174,8 @@ def _fetch_shipped_orders(amz_token, after, before):
             continue
 
         if r.status_code != 200:
-            logger.error(f"Amazon API error {r.status_code}: {r.text[:200]}")
-            break
+            logger.warning(f"Amazon API error on page {page} ({r.status_code}) — using results from previous pages")
+            break  # don't log as error — page 1 results are still valid
 
         body   = r.json()
         orders = body.get("orders", [])
@@ -188,6 +183,13 @@ def _fetch_shipped_orders(amz_token, after, before):
         for order in orders:
             order_id = order.get("orderId", "").strip()
             if not order_id:
+                continue
+
+            # Only process SHIPPED orders — filter in code since we
+            # can't combine fulfillmentStatuses with lastUpdatedAfter
+            fulfillment = order.get("fulfillment", {})
+            status = fulfillment.get("fulfillmentStatus", "")
+            if status != "SHIPPED":
                 continue
 
             tracking = _extract_tracking(order)
