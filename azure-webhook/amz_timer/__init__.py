@@ -61,23 +61,28 @@ def main(timer: func.TimerRequest) -> None:
     # ── Fetch recently shipped Amazon orders ──────────────────
     since = (datetime.now(timezone.utc) - timedelta(minutes=LOOKBACK_MINUTES))
     after  = since.strftime("%Y-%m-%dT%H:%M:%SZ")
-    before = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     logger.info(f"Polling Amazon: lastUpdatedAfter={after}")
 
-    orders = _fetch_shipped_orders(amz_token, after, before)
-    logger.info(f"Found {len(orders)} shipped order(s) in window")
+    amazon_orders = _fetch_shipped_orders(amz_token, after)
+    logger.info(f"Found {len(amazon_orders)} shipped order(s) with tracking in window")
 
-    if not orders:
+    if not amazon_orders:
         logger.info("Nothing to sync")
         return
 
-    # ── Process each order ────────────────────────────────────
+    # ── Load ALL open Linnworks orders into memory ONCE ───────
+    # Much faster than searching per-order (avoids 630 API calls for 90 orders)
+    logger.info("Loading Linnworks open orders into memory...")
+    lw_index = _build_lw_index(lw_token, lw_server)
+    logger.info(f"Linnworks index built: {len(lw_index)} orders loaded")
+
+    # ── Match and update ──────────────────────────────────────
     updated = skipped = errors = 0
 
-    for order_id, tracking_info in orders.items():
+    for order_id, tracking_info in amazon_orders.items():
         try:
-            lw_order = _find_lw_order(lw_token, lw_server, order_id)
+            lw_order = lw_index.get(order_id)
 
             if not lw_order:
                 logger.info(f"  {order_id} — not in Linnworks, skipping")
@@ -108,8 +113,6 @@ def main(timer: func.TimerRequest) -> None:
             logger.error(f"  ❌ {order_id} — exception: {e}")
             errors += 1
 
-        time.sleep(0.3)  # gentle rate limiting
-
     logger.info(f"Run complete — updated={updated} skipped={skipped} errors={errors}")
 
 
@@ -133,21 +136,19 @@ def _auth_amazon():
         return None
 
 
-def _fetch_shipped_orders(amz_token, after, before):
+def _fetch_shipped_orders(amz_token, after):
     """
-    Fetch all SHIPPED orders updated in [after, before].
+    Fetch all orders updated since `after` that are SHIPPED and have tracking.
     Returns dict: { amazon_order_id: { tracking_number, carrier } }
-    Only includes orders that actually have a tracking number.
     """
-    results        = {}
+    results          = {}
     pagination_token = None
-    page           = 0
+    page             = 0
 
     while True:
         page += 1
 
         if pagination_token:
-            # Paginated requests: paginationToken ONLY — absolutely nothing else
             params = {"paginationToken": pagination_token}
         else:
             params = {
@@ -239,36 +240,69 @@ def _auth_linnworks():
     return None, None
 
 
-def _find_lw_order(lw_token, server, amazon_order_id):
+def _build_lw_index(lw_token, server):
+    """
+    Load ALL open Amazon orders from Linnworks across all fulfilment centres
+    into a dict keyed by ReferenceNum (Amazon Order ID).
+
+    This is called ONCE per timer run — much faster than per-order searches.
+    Returns: { amazon_order_id: { lw_guid, shipping_info, existing_tracking } }
+    """
+    index = {}
+
+    source_filter = json.dumps({
+        "TextFields": [
+            {"FieldCode": "GENERAL_INFO_SOURCE", "Type": 0, "Text": "Amazon"}
+        ]
+    })
+
     for fc_id in FULFILMENT_CENTRES:
-        try:
-            r = requests.post(
-                f"{server}/api/Orders/GetOpenOrders",
-                headers={"Authorization": lw_token},
-                data={
-                    "entriesPerPage":   50,
-                    "pageNumber":       1,
-                    "filters":          "",
-                    "sorting":          json.dumps([{"Direction": 0, "FieldCode": "GENERAL_INFO_DATE"}]),
-                    "fulfilmentCenter": fc_id,
-                    "additionalFilter": amazon_order_id,
-                },
-                timeout=30,
-            )
-            if r.status_code != 200:
-                continue
-            for order in r.json().get("Data", []):
-                gi  = order.get("GeneralInfo", {})
-                if (gi.get("ReferenceNum") or "").strip() == amazon_order_id:
-                    si = order.get("ShippingInfo", {})
-                    return {
-                        "lw_guid":           order.get("OrderId", ""),
-                        "shipping_info":     si,
-                        "existing_tracking": (si.get("TrackingNumber") or "").strip(),
-                    }
-        except Exception as e:
-            logger.error(f"LW search error fc={fc_id}: {e}")
-    return None
+        page     = 1
+        per_page = 500
+
+        while True:
+            try:
+                r = requests.post(
+                    f"{server}/api/Orders/GetOpenOrders",
+                    headers={"Authorization": lw_token},
+                    data={
+                        "entriesPerPage":   per_page,
+                        "pageNumber":       page,
+                        "filters":          source_filter,
+                        "sorting":          json.dumps([{"Direction": 0, "FieldCode": "GENERAL_INFO_DATE"}]),
+                        "fulfilmentCenter": fc_id,
+                        "additionalFilter": "",
+                    },
+                    timeout=60,
+                )
+
+                if r.status_code != 200:
+                    break
+
+                data    = r.json()
+                total   = data.get("TotalEntries", 0)
+                entries = data.get("Data", [])
+
+                for order in entries:
+                    gi  = order.get("GeneralInfo", {})
+                    ref = (gi.get("ReferenceNum") or "").strip()
+                    if ref and ref not in index:
+                        si = order.get("ShippingInfo", {})
+                        index[ref] = {
+                            "lw_guid":           order.get("OrderId", ""),
+                            "shipping_info":     si,
+                            "existing_tracking": (si.get("TrackingNumber") or "").strip(),
+                        }
+
+                if page * per_page >= total:
+                    break
+                page += 1
+
+            except Exception as e:
+                logger.error(f"LW index build error fc={fc_id} page={page}: {e}")
+                break
+
+    return index
 
 
 def _write_tracking(lw_token, server, lw_guid, tracking_number, carrier, existing_si):
